@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -32,32 +33,27 @@ public class Gui {
 	 static Label rockLabel;
 	 static Label brickLabel;
 	 
-	 static TextButton otherPlayer1;
-     static TextButton otherPlayer2;
-     static TextButton otherPlayer3;
      static TextButton diceRoll;
      static TextButton cheat;
      
-     static Table startTable;
+
      static Table nextTurnTable;
      static Table devCardTable;
+     static Table playerTable;
      
      static ArrayList<TextButton> ownedDevCards;
-     
+     static ArrayList<TextButton> playerButtons;
 		    
 
 	public static void show(Stage stage, final Skin skin, GameAssetsManager assMan, Player playerMain, ArrayList<Player> otherPlayerList) {
 		ownedDevCards = new ArrayList<TextButton>();
+		playerButtons = new ArrayList<TextButton>();
 		
 		Table exitTable = new Table();
 		exitTable.setFillParent(true);
 		exitTable.left().bottom();
 		stage.addActor(exitTable);
 		
-		startTable = new Table();
-		startTable.setFillParent(true);
-		startTable.center().center();
-		stage.addActor(startTable);
 		
 		devCardTable = new Table();
 		devCardTable.setFillParent(true);
@@ -81,24 +77,46 @@ public class Gui {
         cheatTable.top().left();
         stage.addActor(cheatTable);
         
-        Table otherPlayerTable = new Table();
-        otherPlayerTable.setFillParent(true);
-        otherPlayerTable.setDebug(false);
-        otherPlayerTable.center().right();
-        stage.addActor(otherPlayerTable);
+        playerTable = new Table();
+        playerTable.setFillParent(true);
+        playerTable.center().right();
+        stage.addActor(playerTable);
         
-        otherPlayer1 = new TextButton("",skin);
-        otherPlayer2 = new TextButton("",skin);
-        otherPlayer3 = new TextButton("",skin);
+        int i = 0;
+        for(final Player x: MainScreen.orderedPlayers) {
+        	playerButtons.add(new TextButton(x.getName()+": "+x.getTotalCardCount(),skin));
+        	
+        	playerButtons.get(i).addListener(new ChangeListener() {
+    			@Override
+    			public void changed(ChangeEvent event, Actor actor) {
+    				if(B2dWorld.gameRunning && MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).getID().equals(MainScreen.getPlayerMain().getID())) {
+    					
+    					if(x.getCanStealFrom()) {
+    						for(Player y: MainScreen.orderedPlayers) {
+    							y.setCanStealFrom(false);
+    						}
+    						String card = x.getRandomCard();
+    						x.removeCard(card);
+    						MainScreen.otherPlayerUpdateInv(x);
+    						MainScreen.getPlayerMain().addCard(card);
+    						MainScreen.playerUpdateInv();
+    					}
+    				}
+    				
+    				
+    			}
+    		});
+        	
+        	playerTable.add(playerButtons.get(i));
+        	playerTable.row();
+        	i++;
+        }
+        
+        
+   
         
         cheat = new TextButton("Cheat Count: 0",skin);
        
-        
-        otherPlayerTable.add(otherPlayer1);
-        otherPlayerTable.row();
-        otherPlayerTable.add(otherPlayer2);
-        otherPlayerTable.row();
-        otherPlayerTable.add(otherPlayer3);
               
         
         TextureRegionDrawable wooddraw = new TextureRegionDrawable(new TextureRegion(assMan.manager.get(assMan.WOODImage, Texture.class)));
@@ -120,6 +138,7 @@ public class Gui {
         
         //create buttons
         TextButton developmentCard = new TextButton("D Card", skin);
+        developmentCard.setColor(MainScreen.getPlayerMain().getColor());
         TextButton exit = new TextButton("Exit", skin);
         TextButton start = new TextButton("Start", skin);
         TextButton nextTurn = new TextButton("Next Turn",skin);
@@ -156,8 +175,6 @@ public class Gui {
 		
 		exitTable.add(exit).width(50).height(50);
 		
-		startTable.add(start).width(50).height(50);
-		
 		cheatTable.add(cheat).width(150).height(50);
 		
 		nextTurnTable.add(nextTurn).height(50);
@@ -167,15 +184,15 @@ public class Gui {
 		developmentCard.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				if(B2dWorld.gameRunning && MainScreen.orderedPlayers[B2dWorld.gameCounter%4].getID().equals(MainScreen.getPlayerMain().getID())) {
-					if(MainScreen.orderedPlayers[B2dWorld.gameCounter%4].getRock()>=1 &&
-						MainScreen.orderedPlayers[B2dWorld.gameCounter%4].getWheat()>=1 &&
-						MainScreen.orderedPlayers[B2dWorld.gameCounter%4].getWool()>=1) {
+				if(B2dWorld.gameRunning && MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).getID().equals(MainScreen.getPlayerMain().getID())) {
+					if(MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).getRock()>=1 &&
+						MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).getWheat()>=1 &&
+						MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).getWool()>=1) {
 					
 						
-						MainScreen.orderedPlayers[B2dWorld.gameCounter%4].setRock(MainScreen.orderedPlayers[B2dWorld.gameCounter%4].getRock()-1);
-						MainScreen.orderedPlayers[B2dWorld.gameCounter%4].setWheat(MainScreen.orderedPlayers[B2dWorld.gameCounter%4].getWheat()-1);
-						MainScreen.orderedPlayers[B2dWorld.gameCounter%4].setWool(MainScreen.orderedPlayers[B2dWorld.gameCounter%4].getWool()-1);
+						MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).setRock(MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).getRock()-1);
+						MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).setWheat(MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).getWheat()-1);
+						MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).setWool(MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).getWool()-1);
 					
 						
 						String dcard = DevelopmentCards.getDCard();
@@ -200,19 +217,11 @@ public class Gui {
 			}
 		});
 		
-		start.addListener(new ChangeListener() {
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				B2dWorld.gameQue=false;
-				removeStartTable();
-				
-			}
-		});
 		
 		nextTurn.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				if(B2dWorld.gameRunning && MainScreen.orderedPlayers[B2dWorld.gameCounter%4].getID().equals(MainScreen.getPlayerMain().getID())) {
+				if(B2dWorld.gameRunning && MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).getID().equals(MainScreen.getPlayerMain().getID())) {
 					MainScreen.gameNextTurn();
 				}
 				
@@ -354,15 +363,36 @@ public class Gui {
 			brickLabel.setText(""+MainScreen.getPlayerMain().getBrick());
 		}
 		
-		if(!MainScreen.getOtherPlayerList().isEmpty()) {
-			otherPlayer1.setText(MainScreen.getOtherPlayerList().get(0).getName()+": "+MainScreen.getOtherPlayerList().get(0).getTotalCardCount());
+		int i = 0;
+		for(Player  x: MainScreen.orderedPlayers) {
+			if(B2dWorld.gameStart) {
+				if(x==MainScreen.orderedPlayers.get(B2dWorld.actualCounter)) {
+					if(x.getColor()==Color.WHITE) {
+						playerButtons.get(i).setColor(Color.GOLD);
+					} else {
+						playerButtons.get(i).setColor(x.getColor());
+					}
+				} else {
+					playerButtons.get(i).setColor(Color.WHITE);
+				}
+				i++;
+			}
+			if(B2dWorld.gameRunning) {
+				if(x==MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4)) {
+					if(x.getColor()==Color.WHITE) {
+						playerButtons.get(i).setColor(Color.GOLD);
+					} else {
+						playerButtons.get(i).setColor(x.getColor());
+					}
+				} else {
+					playerButtons.get(i).setColor(Color.WHITE);
+				}
+				
+				playerButtons.get(i).setText(x.getName()+ ": "+x.getTotalCardCount());
+				i++;
+			}
 		}
-		if((MainScreen.getOtherPlayerList().size()>1)) {
-			otherPlayer2.setText(MainScreen.getOtherPlayerList().get(1).getName()+": "+MainScreen.getOtherPlayerList().get(1).getTotalCardCount());
-		}
-		if((MainScreen.getOtherPlayerList().size()>2)) {
-			otherPlayer3.setText(MainScreen.getOtherPlayerList().get(2).getName()+": "+MainScreen.getOtherPlayerList().get(2).getTotalCardCount());
-		}
+		
 		
 		diceRoll.setText("Last Roll: "+ B2dWorld.gameDiceRoll);
 		cheat.setText("Cheat Count: "+B2dWorld.gameCheatCounter);
@@ -373,9 +403,6 @@ public class Gui {
 		
 	}
 	
-	public static void removeStartTable() {
-		startTable.remove();
-	}
 	
 	private static void updateDisplayTable(final Skin skin) {
 		if(ownedDevCards!=null)
@@ -387,7 +414,7 @@ public class Gui {
 			tb.addListener(new ChangeListener() {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
-					if(B2dWorld.gameRunning && MainScreen.orderedPlayers[B2dWorld.gameCounter%4].getID().equals(MainScreen.getPlayerMain().getID())) {
+					if(B2dWorld.gameRunning && MainScreen.orderedPlayers.get(B2dWorld.gameCounter%4).getID().equals(MainScreen.getPlayerMain().getID())) {
 						if(x.equals("KNIGHT")) {
 							MainScreen.getPlayerMain().removeDCard("KNIGHT");
 							B2dWorld.canMoveRobber=true;

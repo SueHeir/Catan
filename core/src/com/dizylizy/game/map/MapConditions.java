@@ -86,11 +86,11 @@ public class MapConditions {
 		return "PLAINS";
 	}
 
-	public static int randomNumber(int j, int i) {
+	public static int randomNumber(int j, int i, String type) {
 		if(j==0 || j==6 || i==0 || i==6 || (j==1 && i==1) ||(j==2 && i==1) ||(j==4 && i==1) ||(j==5 && i==1) ||(j==1 && i==5) ||(j==5 && i==5)) {
 			return 0;
 		}
-		if(Map.tiles[j][i].getType()=="DESERT") {
+		if(type=="DESERT") {
 			return 0;
 		}
 		

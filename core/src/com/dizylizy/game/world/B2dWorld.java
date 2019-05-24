@@ -1,6 +1,7 @@
 package com.dizylizy.game.world;
 
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -29,8 +30,7 @@ public class B2dWorld {
 	static private OrthographicCamera camera;
 
 	public static int[] mapsize= {7,7};
-	static public boolean gameQue=true;
-	static public boolean gameStart=false;
+	static public boolean gameStart=true;
 	static public boolean gameRunning=false;
 	static public boolean gameEnd=false;
 	static public boolean canMoveRobber=false;
@@ -38,13 +38,14 @@ public class B2dWorld {
 	static public int gameCounter=0;
 	static public int gameDiceRoll =0;
 	static public int gameCheatCounter = 0;
-	
+	static public int actualCounter;
 	
 	static public boolean gameStartBuiltSet = false;
+	
 	public static int roadBuilderCount=0;
 	
 	
-	public B2dWorld(KeyboardController cont, OrthographicCamera cam, GameAssetsManager assetManager){
+	public B2dWorld(KeyboardController cont, OrthographicCamera cam, GameAssetsManager assetManager, ArrayList<String> tileType, ArrayList<Integer> tileValue){
 		camera = cam;
 		controller = cont;
 		world = new World(new Vector2(0,0), true);
@@ -58,7 +59,7 @@ public class B2dWorld {
 		player = bodyFactory.makeCirclePolyBody(0, 0, 2, 0, BodyType.DynamicBody, true);
 		*/
 		
-		Map.init(mapsize,bodyFactory,assetManager);
+		Map.init(mapsize,bodyFactory,assetManager, tileType, tileValue);
 		
 		
 		
@@ -66,6 +67,7 @@ public class B2dWorld {
 	
 	 
 	boolean justClicked = false;
+	
 	// our game logic here
 	public void logicStep(float delta){
 		
@@ -73,9 +75,7 @@ public class B2dWorld {
 			justClicked= false;
 		}
 		
-		if(gameQue) {
-			gameQue(delta);
-		}else if(gameStart) {
+		 if(gameStart) {
 			gameStartLogic(delta);
 		} else if(gameRunning) {
 			gameRunningLogic(delta);
@@ -112,13 +112,7 @@ public class B2dWorld {
 	}
 
 	
-	private void gameQue(float delta) {
-		
-		
-			
-		
-	}
-	int actualCounter;
+	
 	private void gameStartLogic(float delta) {
 		
 		if(gameCounter==4) {  actualCounter = 3;
@@ -142,7 +136,7 @@ public class B2dWorld {
 		for (Vertex x: Map.VertexList) {
 			if(pointIntersectsBody(x.getBody(),controller.mouseLocation)){
 				x.setHover(true);
-				if(MainScreen.getPlayerMain().getID().equals(MainScreen.orderedPlayers[actualCounter].getID())) {
+				if(MainScreen.getPlayerMain().getID().equals(MainScreen.orderedPlayers.get(actualCounter).getID())) {
 					if(controller.isMouse1Down && !justClicked) {
 						if(!x.getHasBuilding()) {
 							if(!x.getIsFilled() && !gameStartBuiltSet) {
@@ -174,11 +168,11 @@ public class B2dWorld {
 			if(pointIntersectsBody(x.getBody(),controller.mouseLocation)){
 				x.setHover(true);
 				
-				if(MainScreen.getPlayerMain().getID().equals(MainScreen.orderedPlayers[actualCounter].getID())) {
+				if(MainScreen.getPlayerMain().getID().equals(MainScreen.orderedPlayers.get(actualCounter).getID())) {
 					if(controller.isMouse1Down && !justClicked) {
 						if(!x.getIsFilled() && !x.getHasBuilding() && (x.getAdjacentVertex().get(0).getBuildingName().equals("SETTLEMENT")
-											  ||x.getAdjacentVertex().get(1).getBuildingName().equals("SETTLEMENT"))&& (x.getAdjacentVertex().get(0).getColor()==MainScreen.orderedPlayers[actualCounter].getColor()
-											  ||x.getAdjacentVertex().get(1).getColor()==MainScreen.orderedPlayers[actualCounter].getColor())) {
+											  ||x.getAdjacentVertex().get(1).getBuildingName().equals("SETTLEMENT"))&& (x.getAdjacentVertex().get(0).getColor()==MainScreen.orderedPlayers.get(actualCounter).getColor()
+											  ||x.getAdjacentVertex().get(1).getColor()==MainScreen.orderedPlayers.get(actualCounter).getColor())) {
 							x.setColor(MainScreen.getPlayerMain().getColor());
 							x.setBuildingName("ROAD");
 							x.setIsFilled(true);
@@ -206,12 +200,19 @@ public class B2dWorld {
 		for (Tile x: Map.TileList) {
 			if(pointIntersectsBody(x.getBody(),controller.mouseLocation)){
 				x.setHover(true);
-				if(MainScreen.getPlayerMain().getID().equals(MainScreen.orderedPlayers[(gameCounter%4)].getID()))
+				if(MainScreen.getPlayerMain().getID().equals(MainScreen.orderedPlayers.get((gameCounter%4)).getID()))
 				if(controller.isMouse1Down && !justClicked) {
-					System.out.println("Clicked");
 					if(canMoveRobber) {
-						System.out.println("changed");
 						canMoveRobber=false;
+						
+						for(Vertex y: x.getAdjacentVertex()) {
+							for(Player z: MainScreen.orderedPlayers) {
+								if(y.getColor()==z.getColor()) {
+									z.setCanStealFrom(true);
+								}
+							}
+						}
+						
 						for(Tile y:Map.TileList) {
 							y.setBuildingName("");
 						}
@@ -232,7 +233,7 @@ public class B2dWorld {
 		for (Vertex x: Map.VertexList) {
 			if(pointIntersectsBody(x.getBody(),controller.mouseLocation)){
 				x.setHover(true);
-				if(MainScreen.getPlayerMain().getID().equals(MainScreen.orderedPlayers[(gameCounter%4)].getID())) {
+				if(MainScreen.getPlayerMain().getID().equals(MainScreen.orderedPlayers.get(gameCounter%4).getID())) {
 					if(controller.isMouse1Down && !justClicked) {
 						System.out.println("test1");
 						if(!x.getHasBuilding() && 
@@ -295,18 +296,18 @@ public class B2dWorld {
 			if(pointIntersectsBody(x.getBody(),controller.mouseLocation)){
 				x.setHover(true);
 				
-				if(MainScreen.getPlayerMain().getID().equals(MainScreen.orderedPlayers[gameCounter%4].getID())) {
+				if(MainScreen.getPlayerMain().getID().equals(MainScreen.orderedPlayers.get(gameCounter%4).getID())) {
 					if(controller.isMouse1Down && !justClicked) {
 						
 						if(!x.getIsFilled() && !x.getHasBuilding() && 
 						  ((x.getAdjacentEdge().get(0).getHasBuilding() && 
-					  	    x.getAdjacentEdge().get(0).getColor()==MainScreen.orderedPlayers[gameCounter%4].getColor())
+					  	    x.getAdjacentEdge().get(0).getColor()==MainScreen.orderedPlayers.get(gameCounter%4).getColor())
 						 ||(x.getAdjacentEdge().get(1).getHasBuilding() && 
-						    x.getAdjacentEdge().get(1).getColor()==MainScreen.orderedPlayers[gameCounter%4].getColor())
+						    x.getAdjacentEdge().get(1).getColor()==MainScreen.orderedPlayers.get(gameCounter%4).getColor())
 					     ||(x.getAdjacentEdge().get(2).getHasBuilding() && 
-					        x.getAdjacentEdge().get(2).getColor()==MainScreen.orderedPlayers[gameCounter%4].getColor())
+					        x.getAdjacentEdge().get(2).getColor()==MainScreen.orderedPlayers.get(gameCounter%4).getColor())
 					     ||(x.getAdjacentEdge().get(3).getHasBuilding() && 
-					        x.getAdjacentEdge().get(3).getColor()==MainScreen.orderedPlayers[gameCounter%4].getColor()))) {
+					        x.getAdjacentEdge().get(3).getColor()==MainScreen.orderedPlayers.get(gameCounter%4).getColor()))) {
 							
 							if((MainScreen.getPlayerMain().getBrick()>0 && MainScreen.getPlayerMain().getWood()>0 ) || roadBuilderCount>0) {
 								System.out.println("a"+MainScreen.getPlayerMain().getBrick());

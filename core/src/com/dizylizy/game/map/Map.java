@@ -26,7 +26,7 @@ public class Map {
 	
 	public static float tileSize = 50;
 
-	public static void init(int[] mapsize, BodyFactory bodyFactory, GameAssetsManager assetManager) {		
+	public static void init(int[] mapsize, BodyFactory bodyFactory, GameAssetsManager assetManager, ArrayList<String> tileType, ArrayList<Integer> tileValue) {		
 			MapConditions.init();
 			worldSize = mapsize;
 			
@@ -39,12 +39,14 @@ public class Map {
 			EdgeList = new ArrayList<Edge>();
 		
 		//FOR TILES 2D array size of MapSize (see play class)	
+			int k=0;
 			for(int i=0;i<worldSize[1];++i){
 				for(int j=0;j<worldSize[0];++j){
 					tiles[j][i] = new Tile(j,i,bodyFactory, assetManager);
-					tiles[j][i].setType(MapConditions.randomTileType(j,i));
-					tiles[j][i].setValue(MapConditions.randomNumber(j,i));
+					tiles[j][i].setType(tileType.get(k));
+					tiles[j][i].setValue(tileValue.get(k));
 					TileList.add(tiles[j][i]);
+					k++;
 				}
 			}
 		
@@ -72,7 +74,8 @@ public class Map {
 				
 			
 			//FOR TILES Sets Location, ID tag, passes tileSize (from play class to basicTile class)
-			int k=0, j=0;
+			k=0;
+			int j=0;
 			for(Tile x: TileList) {
 				if((k & 1) == 0) {
 				x.setParamaters(1.50f*tileSize*k, 1.73f*tileSize*j, tileSize);
@@ -168,10 +171,11 @@ public class Map {
 				}
 			} 
 			
+			
 			for(Edge x1: EdgeList) {
 				
 				if(x1.getAdjacentTile().size()>1)
-				if(x1.getAdjacentTile().get(0).getType()=="OCEAN" && x1.getAdjacentTile().get(1).getType()=="OCEAN") {
+				if(x1.getAdjacentTile().get(0).getType().equals("OCEAN") && x1.getAdjacentTile().get(1).getType().equals("OCEAN")) {
 					x1.setIsFilled(true);
 				}
 			}
@@ -179,7 +183,7 @@ public class Map {
 			for(Vertex x1: VertexList) {
 				
 				if(x1.getAdjacentTile().size()>2)
-				if(x1.getAdjacentTile().get(0).getType()=="OCEAN" && x1.getAdjacentTile().get(1).getType()=="OCEAN" && x1.getAdjacentTile().get(2).getType()=="OCEAN") {
+				if(x1.getAdjacentTile().get(0).getType().equals("OCEAN") && x1.getAdjacentTile().get(1).getType().equals("OCEAN") && x1.getAdjacentTile().get(2).getType().equals("OCEAN")) {
 					x1.setIsFilled(true);
 				}
 			} 

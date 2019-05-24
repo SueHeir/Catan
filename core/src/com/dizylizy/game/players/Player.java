@@ -1,6 +1,7 @@
 package com.dizylizy.game.players;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import com.badlogic.gdx.graphics.Color;
 
@@ -11,6 +12,7 @@ public class Player {
 	private String colorText;
 	private Color color;
 	private int lastDiceRoll;
+	private boolean canStealFrom;
 	
 	static ArrayList<String> playerDCardList;
 	
@@ -89,6 +91,19 @@ public class Player {
 		
 		
 	}
+	
+	public String getColorString() {
+		
+		if(this.color==Color.BROWN) return "Brown";
+		if(this.color==Color.BLUE) return "Blue";
+		if(this.color==Color.WHITE) return "White";
+		if(this.color==Color.RED) return "Red";
+		if(this.color==Color.ORANGE) return "Orange";
+		if(this.color==Color.GREEN) return "Green";
+		
+		return "Black";
+		
+	}
 	public Color getColor() {
 		// TODO Auto-generated method stub
 		return color;
@@ -115,6 +130,75 @@ public class Player {
 	}
 	public ArrayList<String> getDevCards() {
 		return playerDCardList;
+	}
+	public String getRandomCard() {
+		ArrayList<String> cards = new ArrayList<String>();
+		
+		for(int i=0;i<brick;i++) {
+			cards.add("Brick");
+		}
+		for(int i=0;i<wood;i++) {
+			cards.add("Wood");
+		}
+		for(int i=0;i<wool;i++) {
+			cards.add("Wool");
+		}
+		for(int i=0;i<rock;i++) {
+			cards.add("Rock");
+		}
+		for(int i=0;i<wheat;i++) {
+			cards.add("Wheat");
+		}
+		
+		Random rand = new Random();
+		int number = rand.nextInt(cards.size());
+		return cards.get(number);
+	}
+	
+	public void removeCard(String string) {
+		
+		if(string.equals("Brick")) {
+			brick--;
+		}
+		if(string.equals("Wood")) {
+			wood--;
+		}
+		if(string.equals("Wool")) {
+			wool--;
+		}
+		if(string.equals("Rock")) {
+			rock--;
+		}
+		if(string.equals("Wheat")) {
+			wheat--;
+		}
+		
+	}
+	
+	public void addCard(String string) {
+		
+		if(string.equals("Brick")) {
+			brick++;
+		}
+		if(string.equals("Wood")) {
+			wood++;
+		}
+		if(string.equals("Wool")) {
+			wool++;
+		}
+		if(string.equals("Rock")) {
+			rock++;
+		}
+		if(string.equals("Wheat")) {
+			wheat++;
+		}
+		
+	}
+	public boolean getCanStealFrom() {
+		return canStealFrom;
+	}
+	public void setCanStealFrom(boolean canStealFrom) {
+		this.canStealFrom = canStealFrom;
 	}
 	
 	

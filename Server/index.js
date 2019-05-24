@@ -20,22 +20,34 @@ io.on('connection', function(socket){
 	socket.emit('getPlayers',players);
 	socket.emit('mapSync',mapElements)
 	socket.broadcast.emit('newPlayer', { id: socket.id});
-	socket.on('playerNameUpdate', function(data){
+	socket.on('playerInfoUpdate', function(data){
 		data.id = socket.id;
 		for(var i = 0; i < players.length; i++){
 			if(players[i].id==data.id){
 				players[i].name = data.name;
 				players[i].colorOfPlayer = data.colorOfPlayer;
-				players[i].lastDiceRoll = data.lastDiceRoll
+				players[i].lastDiceRoll = data.diceRoll
 				
 			}
 		}
-		socket.broadcast.emit('playerNameUpdate',data);
+		socket.broadcast.emit('playerInfoUpdate',data);
+	});
+	
+	socket.on('playerColorNameUpdate', function(data){
+		data.id = socket.id;
+		for(var i = 0; i < players.length; i++){
+			if(players[i].id==data.id){
+				players[i].name = data.name;
+				players[i].colorOfPlayer = data.colorOfPlayer;
+				
+			}
+		}
+		socket.broadcast.emit('playerColorNameUpdate',data);
 	});
 	socket.on('mapSync', function(data){
 		if(!mapUpdated){
 			for(var i = 0; i< data.length;i++) {
-				mapElements.push(new mapElement(data[i].XCoord,data[i].YCoord,data[i].Type,data[i].Value));
+				mapElements.push(new mapElement(data[i].Type,data[i].Value));
 				//console.log(data[i]);
 			}
 			
@@ -43,6 +55,11 @@ io.on('connection', function(socket){
 			
 		}
 		mapUpdated=true;
+		
+	});
+	socket.on('startGame', function(data){
+		socket.broadcast.emit('startGame');
+		console.log("The Game Has Started");
 		
 	});
 	socket.on('gameStart', function(data){
@@ -81,6 +98,10 @@ io.on('connection', function(socket){
 			socket.broadcast.emit('playerUpdateInv', data)
 			
 	});
+	socket.on('otherPlayerUpdateInv', function(data){
+			socket.broadcast.emit('playerUpdateInv', data)
+			
+	});
 	socket.on('updateCheatCounter', function(data){
 			socket.broadcast.emit('updateCheatCounter', data)
 			
@@ -108,9 +129,7 @@ function player(id,name,colorOfPlayer,lastDiceRoll){
 	this.lastDiceRoll = lastDiceRoll;
 }
 
-function mapElement(XCoord,YCoord,Type,Value){
-	this.XCoord = XCoord;
-	this.YCoord = YCoord;
+function mapElement(Type,Value){
 	this.Type = Type;
 	this.Value = Value;
 }

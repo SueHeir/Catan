@@ -47,9 +47,7 @@ public class Vertex extends MapElement{
 		
 		if(XCoord==0 || YCoord==0 || XCoord==B2dWorld.mapsize[0]*2-1 || YCoord==B2dWorld.mapsize[1]) {
 			isFilled = true;
-		}
-		
-		
+		}		
 	}
 	
 	public void setParamaters(float x, float y, float tileSize){

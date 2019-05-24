@@ -50,22 +50,21 @@ public class MainScreen implements Screen {
 	private Skin skin;
 	static private Socket socket;
 	private static Player playerMain;
-	private static ArrayList<Player> OtherPlayerList;
-	private static ArrayList<Player> AllPlayerList;
-	public static Player[] orderedPlayers;
-	
-	private static Boolean UsingMyMap =false;
-	public static Player firstPlayer;
+	public static ArrayList<Player> orderedPlayers;
 	
 	
-	public MainScreen(MainGame box2d, String address, String name, String colorOfPlayer) {
-		int diceRoll = B2dWorld.rollDice(2);
-		DevelopmentCards.init();
-		connectSocket(address);
-		configSocketEvents(name, colorOfPlayer, diceRoll);
-		updatePlayer(name, colorOfPlayer,diceRoll);
-		
+	
+	public MainScreen(MainGame box2d, Player playerMain, ArrayList<Player> orderedPlayers, 
+			ArrayList<String> tileType, ArrayList<Integer> tileValue, Socket sockett) {
 		parent = box2d;
+		this.playerMain=playerMain;
+		this.orderedPlayers=orderedPlayers;
+		this.socket = sockett;
+		
+		DevelopmentCards.init();
+		
+		
+		
 		// Constructs a new OrthographicCamera, using the given viewport width and height
 		// Height is multiplied by aspect ratio.
 		float w = Gdx.graphics.getWidth();
@@ -76,7 +75,7 @@ public class MainScreen implements Screen {
 		
 		
 		controller = new KeyboardController();
-		model = new B2dWorld(controller,cam,parent.assMan);
+		
 		
 		//debugRenderer = new Box2DDebugRenderer(true,true,true,true,true,true);
 	
@@ -88,55 +87,9 @@ public class MainScreen implements Screen {
 		
 		stage = new Stage(new ScreenViewport());
 		skin = parent.assMan.manager.get("skin/uiskin.json");
+		model = new B2dWorld(controller,cam,parent.assMan, tileType, tileValue);
 		
-		OtherPlayerList = new ArrayList<Player>();
-		AllPlayerList = new ArrayList<Player>();
-		
-	}
-
-	
-
-	public void connectSocket(String address) {
-		try {
-			
-			socket = IO.socket(address);
-			
-			socket.connect();
-		} catch(Exception e) {
-			System.out.println(e);
-		}
-		
-	}
-	
-	public void updatePlayer(String name, String colorOfPlayer, int diceRoll) {
-		JSONObject data = new JSONObject();
-		try {
-			data.put("name", name);
-			data.put("colorOfPlayer", colorOfPlayer);
-			data.put("lastDiceRoll", diceRoll);
-			socket.emit("playerNameUpdate", data);
-		} catch(JSONException e) {
-			Gdx.app.log("SOCKET.IO", "Error sending name");
-		}
-	}
-	
-	public void mapSync() {
-		JSONArray data = new JSONArray();
-		
-		try {int i=0;
-			for(Tile x: Map.TileList) {
-				JSONObject obj = new JSONObject();
-				obj.put("XCoord", x.getXCoord());
-				obj.put("YCoord", x.getYCoord());
-				obj.put("Type", x.getType());
-				obj.put("Value", x.getValue());
-				data.put(i,obj);
-				i++;
-			}
-			socket.emit("mapSync", data);
-		} catch(JSONException e) {
-			Gdx.app.log("SOCKET.IO", "Error syncing Map");
-		}
+		configSocketEvents();
 	}
 	
 	public static void mapUpdateVertex() {
@@ -173,15 +126,6 @@ public class MainScreen implements Screen {
 		}
 	}
 	
-	public void gameStart() {	
-		try {
-			socket.emit("gameStart", new JSONObject());
-			reCalcFirstPlayer();
-			System.out.println("game started");
-		} catch(Exception e) {
-			
-		}
-	}
 	
 	static public void gameNextTurn() {	
 		JSONObject data = new JSONObject();
@@ -196,7 +140,7 @@ public class MainScreen implements Screen {
 			if(B2dWorld.gameRunning||B2dWorld.gameCounter==0||B2dWorld.gameCounter==8) {
 				B2dWorld.giveResorces(diceRoll);
 				if(diceRoll==7) {
-				for(Player player: AllPlayerList) {
+				for(Player player: orderedPlayers) {
 					if(player.getTotalCardCount()>7) {
 						int add = (int)Math.floor(player.getTotalCardCount() /2);
 						B2dWorld.gameCheatCounter=B2dWorld.gameCheatCounter+add;
@@ -251,6 +195,21 @@ public class MainScreen implements Screen {
 		}
 	}
 	
+	static public void otherPlayerUpdateInv(Player player) {	
+		JSONObject data = new JSONObject();
+		try {
+			data.put("id", player.getID());
+			data.put("wood", player.getWood());
+			data.put("wool", player.getWool());
+			data.put("wheat", player.getWheat());
+			data.put("rock", player.getRock());
+			data.put("brick", player.getBrick());
+			socket.emit("otherPlayerUpdateInv", data);
+		} catch(Exception e) {
+			
+		}
+	}
+	
 	static public void updateCheatCounter() {	
 		JSONObject data = new JSONObject();
 		try {
@@ -261,149 +220,8 @@ public class MainScreen implements Screen {
 		}
 	}
 	
-	private void configSocketEvents(final String name, final String colorOfPlayer, final int diceRoll) {
-		socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-			@Override
-			public void call(Object... args) {
-				Gdx.app.log("SocketIO", "Connected");
-				playerMain = new Player();
-				playerMain.setColor(colorOfPlayer);
-				playerMain.setLastDiceRoll(diceRoll);
-				playerMain.setName(name);
-				AllPlayerList.add(playerMain);
-			}
-			
-		}).on("socketID", new Emitter.Listener() {
-			@Override
-			public void call(Object... args) {
-				JSONObject data = (JSONObject) args[0];
-				
-				
-				try {
-					String id = data.getString("id");
-					Gdx.app.log("SocketIO", "My ID: "+id);
-					playerMain.setID(id);// updatePlayer
-					
-				} catch (JSONException e) {
-					Gdx.app.log("SocketIO", "Error getting ID");			
-				}
-					
-			}
-		}).on("newPlayer", new Emitter.Listener() {
-			@Override
-			public void call(Object... args) {
-				JSONObject data = (JSONObject) args[0];
-				
-				try {
-					String id = data.getString("id");
-					Gdx.app.log("SocketIO", "New Player Connected: "+id);
-					Player player = new Player();
-					player.setID(id);
-					OtherPlayerList.add(player);
-					AllPlayerList.add(player);
-					
-					
-				} catch (JSONException e) {
-					Gdx.app.log("SocketIO", "Error getting new Player ID");			
-				}
-				
-					
-			}
-
-			
-		}).on("playerDisconnected", new Emitter.Listener() {
-			@Override
-			public void call(Object... args) {
-				JSONObject data = (JSONObject) args[0];
-				try {
-					String id = data.getString("id");
-					for(Player x: OtherPlayerList) {
-						if(x.getID()==id) {
-							OtherPlayerList.remove(x);
-						}
-					}
-					
-				} catch (JSONException e) {
-					Gdx.app.log("SocketIO", "Error getting new Player ID");			
-				}
-					
-			}
-		}).on("playerNameUpdate", new Emitter.Listener() {
-			@Override
-			public void call(Object... args) {
-				JSONObject data = (JSONObject) args[0];
-				try {
-					for(int i =0; i< OtherPlayerList.size();i++) {
-						if(OtherPlayerList.get(i).getID().equals(data.getString("id"))) {
-							OtherPlayerList.get(i).setName(data.getString("name"));
-							OtherPlayerList.get(i).setColor(data.getString("colorOfPlayer"));
-							OtherPlayerList.get(i).setLastDiceRoll(data.getInt("lastDiceRoll"));
-						}
-					}
-					
-				} catch (JSONException e) {
-					Gdx.app.log("SocketIO", "Error getting Name");			
-				}
-					
-			}
-		}).on("getPlayers", new Emitter.Listener() {
-			
-			@Override
-			public void call(Object... args) {
-				JSONArray objects = (JSONArray) args[0];
-				try {
-					for(int i = 0;i < objects.length();i++) {
-						Player player = new Player();
-						player.setID(objects.getJSONObject(i).getString("id"));
-						player.setName(objects.getJSONObject(i).getString("name"));
-						player.setColor(objects.getJSONObject(i).getString("colorOfPlayer"));
-						player.setLastDiceRoll(objects.getJSONObject(i).getInt("lastDiceRoll"));
-						OtherPlayerList.add(player);
-						AllPlayerList.add(player);
-						
-					}
-				} catch(JSONException e) {
-					
-				}
-				
-				
-			}
-		}).on("mapSync", new Emitter.Listener() {
-			
-			@Override
-			public void call(Object... args) {
-				JSONArray objects = (JSONArray) args[0];
-				try {
-					if(objects.length()==0) {
-						setUsingMyMap(true);
-						mapSync();
-						return;
-					}
-					for(int i = 0;i < objects.length();i++) {
-						Map.TileList.get(i).setType(objects.getJSONObject(i).getString("Type"));
-						Map.TileList.get(i).setValue(objects.getJSONObject(i).getInt("Value"));
-						Map.TileList.get(i).setParamaters();
-						
-					}
-					
-				} catch(JSONException e) {
-					
-				}
-				
-			}
-		}).on("gameStart", new Emitter.Listener() {
-			
-			@Override
-			public void call(Object... args) {
-				B2dWorld.gameQue=false;
-				B2dWorld.gameStart=true;
-				Gui.removeStartTable();
-				reCalcFirstPlayer();
-				System.out.println("game started");
-				
-				
-			}
-		}).on("gameNextTurn", new Emitter.Listener() {
+	private void configSocketEvents() {
+		LobbyScreen.getSocket().on("gameNextTurn", new Emitter.Listener() {
 			
 			@Override
 			public void call(Object... args) {
@@ -501,7 +319,7 @@ public class MainScreen implements Screen {
 			public void call(Object... args) {
 				JSONObject data = (JSONObject) args[0];
 				try {
-					for(Player x: OtherPlayerList) {
+					for(Player x: orderedPlayers) {
 						if(x.getID().equals(data.get("id"))) {
 							x.setBrick(data.getInt("brick"));
 							x.setWood(data.getInt("wood"));
@@ -554,20 +372,17 @@ public class MainScreen implements Screen {
 		multiplexer.addProcessor(controller);  // set your game input precessor as second
 		Gdx.input.setInputProcessor(multiplexer);	
 		
-		Gui.show(stage,skin,parent.assMan,playerMain,OtherPlayerList);
+		Gui.show(stage,skin,parent.assMan,playerMain,orderedPlayers);
 		
 		
 	}
 
 	@Override
 	public void render(float delta) {
+		
+		
 		model.logicStep(delta);
-		
-		if(B2dWorld.gameQue==false && B2dWorld.gameStart==false && B2dWorld.gameRunning==false) {
-			gameStart();
-			B2dWorld.gameStart=true;
-		}
-		
+	
 		sb.setProjectionMatrix(cam.combined);
 		pb.setProjectionMatrix(cam.combined);
 		sr.setProjectionMatrix(cam.combined);
@@ -626,7 +441,7 @@ public class MainScreen implements Screen {
 	} 
 	
 	public static Player getPlayerByColor(Color color) {
-		for(Player x: AllPlayerList) {
+		for(Player x: orderedPlayers) {
 			if(x.getColor()==color) {
 				return x;
 			}
@@ -636,80 +451,8 @@ public class MainScreen implements Screen {
 	}
 	
 	
-	private void reCalcFirstPlayer() {
-		firstPlayer = MainScreen.getPlayerMain();
-		int maxValue = firstPlayer.getLastDiceRoll();
-		for(Player x: MainScreen.getOtherPlayerList()) {
-			if(x.getLastDiceRoll()>maxValue) {
-				maxValue = x.getLastDiceRoll();
-				firstPlayer = x;
-			} else if (x.getLastDiceRoll()==maxValue) {
-				if(x.getID().charAt(0)>firstPlayer.getID().charAt(0)) {
-					firstPlayer = x;
-				}
-			}
-			
-		}
-		
-		calcOrderOfPlayers(firstPlayer);
-		
-		
-	}
-	
-	public static void calcOrderOfPlayers(Player player) {
-		orderedPlayers = new Player[4];
-		if(player.getColor()==Color.BROWN) {
-			orderedPlayers[0]=player;
-			orderedPlayers[1]=getPlayerByColor(Color.BLUE);
-			orderedPlayers[2]=getPlayerByColor(Color.RED);
-			orderedPlayers[3]=getPlayerByColor(Color.WHITE);
-		}
-		if(player.getColor()==Color.BLUE) {
-			orderedPlayers[0]=player;
-			orderedPlayers[1]=getPlayerByColor(Color.RED);
-			orderedPlayers[2]=getPlayerByColor(Color.WHITE);
-			orderedPlayers[3]=getPlayerByColor(Color.BROWN);
-		}
-		if(player.getColor()==Color.RED) {
-			orderedPlayers[0]=player;
-			orderedPlayers[1]=getPlayerByColor(Color.WHITE);
-			orderedPlayers[2]=getPlayerByColor(Color.BROWN);
-			orderedPlayers[3]=getPlayerByColor(Color.BLUE);
-		}
-		if(player.getColor()==Color.WHITE) {
-			orderedPlayers[0]=player;
-			orderedPlayers[1]=getPlayerByColor(Color.BROWN);
-			orderedPlayers[2]=getPlayerByColor(Color.BLUE);
-			orderedPlayers[3]=getPlayerByColor(Color.RED);
-		}
-		
-		if(orderedPlayers[3]!=null && orderedPlayers[2]!=null && orderedPlayers[1]!=null) {
-			System.out.println(orderedPlayers[0].getName()+" "+orderedPlayers[1].getName()+" "+orderedPlayers[2].getName()+" "+orderedPlayers[3].getName());
-		}
-		
-	}
-	
 	public static Player getPlayerMain() {
 		return playerMain;
 	}
 	
-	public static ArrayList<Player> getOtherPlayerList() {
-		if(OtherPlayerList!=null)
-		return OtherPlayerList;
-		
-		return null;
-	}
-
-
-
-	public static Boolean getUsingMyMap() {
-		return UsingMyMap;
-	}
-
-
-
-	public void setUsingMyMap(Boolean usingMyMap) {
-		UsingMyMap = usingMyMap;
-	}
-
 }

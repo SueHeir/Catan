@@ -1,15 +1,20 @@
 package com.dizylizy.game;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.Game;
 import com.dizylizy.game.loader.GameAssetsManager;
+import com.dizylizy.game.players.Player;
 import com.dizylizy.game.views.*;
+
+import io.socket.client.Socket;
 
 
 
 public class MainGame extends Game {
 	
 	private LoadingScreen loadingScreen;
-	private PreferencesScreen preferencesScreen;
+	private LobbyScreen lobbyScreen;
 	private MenuScreen menuScreen;
 	private MainScreen mainScreen;
 	private EndScreen endScreen;
@@ -18,7 +23,7 @@ public class MainGame extends Game {
 
 	 
 	public final static int MENU = 0;
-	public final static int PREFERENCES = 1;
+	public final static int LOBBY = 1;
 	public final static int APPLICATION = 2;
 	public final static int ENDGAME = 3;
 	
@@ -40,21 +45,15 @@ public class MainGame extends Game {
 		changeScreen(screen,null,null,null);
 	}
 	
-	
-	
 	public void changeScreen(int screen, String address, String name, String colorOfPlayer){
 		switch(screen){
 			case MENU:
 				if(menuScreen == null) menuScreen = new MenuScreen(this);
 				this.setScreen(menuScreen);
 				break;
-			case PREFERENCES:
-				if(preferencesScreen == null) preferencesScreen = new PreferencesScreen(this);
-				this.setScreen(preferencesScreen);
-				break;
-			case APPLICATION:
-				if(mainScreen == null) mainScreen = new MainScreen(this,address,name,colorOfPlayer);
-				this.setScreen(mainScreen);
+			case LOBBY:
+				if(lobbyScreen == null) lobbyScreen = new LobbyScreen(this,address,name,colorOfPlayer);
+				this.setScreen(lobbyScreen);
 				break;
 			case ENDGAME:
 				if(endScreen == null) endScreen = new EndScreen(this);
@@ -70,6 +69,13 @@ public class MainGame extends Game {
 	@Override
 	public void dispose(){
 		assMan.manager.dispose();
+	}
+	public void changeScreen(int application2, ArrayList<Player> orderedPlayers, Player playerMain,
+			ArrayList<String> tileType, ArrayList<Integer> tileValue, Socket socket) {
+			if(application2==APPLICATION) {
+				if(mainScreen == null) mainScreen = new MainScreen(this, playerMain, orderedPlayers, tileType, tileValue, socket);
+				this.setScreen(mainScreen);
+			}
 	}
 	
 	

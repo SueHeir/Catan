@@ -21,11 +21,11 @@ public class MenuScreen implements Screen{
 	private MainGame parent;
 	private Stage stage;
 	private Skin skin;
-	
 	private String name,address,colorOfPlayer;
 	
 	public MenuScreen(MainGame box2dTutorial){
 		parent = box2dTutorial;
+		
 		/// create stage and set it as input processor
 		stage = new Stage(new ScreenViewport());
 		
@@ -40,7 +40,7 @@ public class MenuScreen implements Screen{
 	@Override
 	public void show() {
 		Gdx.input.setInputProcessor(stage); 
-		// Create a table that fills the screen. Everything else will go inside this table.
+		// Create a table that fills the screen. 
 		Table table = new Table();
 		table.setFillParent(true);
         table.setDebug(false);
@@ -49,36 +49,46 @@ public class MenuScreen implements Screen{
     	
         
         
-        //create buttons
-        TextButton newGame = new TextButton("New Game", skin);
-        TextButton preferences = new TextButton("Preferences", skin);
+        //create Join Lobby and Exit buttons
+        TextButton joinLobby = new TextButton("Join Lobby", skin);
         TextButton exit = new TextButton("Exit", skin);
         
+        //Create display of Name: [Enter Player Name]
         Label nameLabel = new Label("Name:",skin);
         final TextField nameText = new TextField("", skin);
+        
+        //Create display of Address: [Enter Address]
         Label addressLabel = new Label("Address:",skin);
         final TextField addressText = new TextField("", skin);
-        addressText.setText("https://localhost:8080");
-        address = "http://localhost:8080";	
+        
+        //sets the default address in the address text field
+        addressText.setText("http://10.0.0.54:8080");
+        address = "http://10.0.0.54:8080";	
+        
+        
+        //Need to remove and add this to lobby window
         colorOfPlayer = "Brown";
         final SelectBox<String> colorBox = new SelectBox<String>(skin);
         colorBox.setItems("Brown","Red","White","Blue","Green","Orange");
         
-        //add buttons to table
-        table.add(newGame).fillX().uniformX();
-		table.row().pad(10, 0, 10, 0);
+        
+        //add Buttons and Text Fields to table
+        table.add(joinLobby).fillX().uniformX();
+        table.add(exit).fillX().uniformX();
+		table.row();
 		table.add(nameLabel);
 		table.add(nameText);
+		
+		//need to remove this
 		table.add(colorBox);
+		
 		table.row();
 		table.add(addressLabel);
 		table.add(addressText);
-		table.row();
-		table.add(preferences).fillX().uniformX();
-		table.row();
-		table.add(exit).fillX().uniformX();
 		
 		
+		//********* create button listeners****************//
+		//Updates name TextField
 		nameText.addListener(new ChangeListener() {
 
 			@Override
@@ -88,6 +98,7 @@ public class MenuScreen implements Screen{
 
 		});
 		
+		//Updates address TextField
 		addressText.addListener(new ChangeListener() {
 
 			@Override
@@ -97,18 +108,17 @@ public class MenuScreen implements Screen{
 
 		});
 		
+		//Updates color selection
 		colorBox.addListener(new ChangeListener() {
 
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
 				colorOfPlayer = colorBox.getSelected();	
-				System.out.println(colorOfPlayer);
 			}
 
 		});
 		
-		
-		// create button listeners
+		//exits application
 		exit.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
@@ -117,21 +127,16 @@ public class MenuScreen implements Screen{
 			}
 		});
 		
-		newGame.addListener(new ChangeListener() {
+		//joins lobby
+		joinLobby.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
 				
 				if(name!=null && address!=null ) {
 					
-					parent.changeScreen(MainGame.APPLICATION,address,name,colorOfPlayer);
+					parent.changeScreen(MainGame.LOBBY,address,name,colorOfPlayer);
+					//parent.changeScreen(MainGame.APPLICATION,address,name,colorOfPlayer);
 				}
-			}
-		});
-		
-		preferences.addListener(new ChangeListener() {
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				parent.changeScreen(MainGame.PREFERENCES, null, null,null);
 			}
 		});
 		
@@ -144,7 +149,7 @@ public class MenuScreen implements Screen{
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
 		// tell our stage to do actions and draw itself
-		stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+		stage.act(Math.min(delta, 1 / 30f));
 		stage.draw();
 	}
 
