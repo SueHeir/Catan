@@ -35,6 +35,8 @@ public class GameAssetsManager {
 	public final String BRICKImage = "images/BRICK.PNG";
 	public final String WOOLImage = "images/WOOL.PNG";
 	public final static String ROBBERImage = "images/ROBBER.PNG";
+	public final static String SHIPImage = "images/SHIP.PNG";
+	
 	
 	public void queueAddFonts(){
 		
@@ -61,6 +63,7 @@ public class GameAssetsManager {
 		manager.load(BRICKImage, Texture.class);
 		
 		manager.load(ROBBERImage, Texture.class);
+		manager.load(SHIPImage, Texture.class);
 	}
 	
 	// a small set of images used by the loading screen

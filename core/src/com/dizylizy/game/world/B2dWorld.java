@@ -202,7 +202,10 @@ public class B2dWorld {
 				x.setHover(true);
 				if(MainScreen.getPlayerMain().getID().equals(MainScreen.orderedPlayers.get((gameCounter%4)).getID()))
 				if(controller.isMouse1Down && !justClicked) {
-					if(canMoveRobber) {
+					justClicked = true;
+					
+					
+					if(canMoveRobber && !x.getType().equals("OCEAN")) {
 						canMoveRobber=false;
 						
 						for(Vertex y: x.getAdjacentVertex()) {
@@ -212,14 +215,58 @@ public class B2dWorld {
 								}
 							}
 						}
-						
 						for(Tile y:Map.TileList) {
-							y.setBuildingName("");
+							if(y.getBuildingName().equals("PORT")) {	 
+							} else {
+								y.setBuildingName("");
+							}
 						}
 						x.setBuildingName("ROBBER");
 						MainScreen.mapUpdateRobber(x.getXCoord(), x.getYCoord());
+					}
+					boolean nextToPort = false;
+					for(Vertex v: x.getAdjacentVertex()) {
+						if(v.getIsPort() && v.getColor()==MainScreen.getPlayerMain().getColor()) {
+							nextToPort= true;
+						}
 						
 					}
+					
+					if(nextToPort) {
+						if(x.getBuildingName().equals("PORT")) {
+							if(x.getPortType().equals("THREE")) {
+								B2dWorld.gameCheatCounter=B2dWorld.gameCheatCounter+2;
+								MainScreen.updateCheatCounter();
+								
+							}
+							if(x.getPortType().equals("BRICK") && MainScreen.getPlayerMain().getBrick()>=2) {
+								MainScreen.getPlayerMain().setBrick(MainScreen.getPlayerMain().getBrick()-2);
+								B2dWorld.gameCheatCounter--;
+								MainScreen.updateCheatCounter();
+							}
+							if(x.getPortType().equals("WOOD") && MainScreen.getPlayerMain().getWood()>=2) {
+								MainScreen.getPlayerMain().setWood(MainScreen.getPlayerMain().getWood()-2);
+								B2dWorld.gameCheatCounter--;
+								MainScreen.updateCheatCounter();
+							}
+							if(x.getPortType().equals("WHEAT") && MainScreen.getPlayerMain().getWheat()>=2) {
+								MainScreen.getPlayerMain().setWheat(MainScreen.getPlayerMain().getWheat()-2);
+								B2dWorld.gameCheatCounter--;
+								MainScreen.updateCheatCounter();
+							}
+							if(x.getPortType().equals("ROCK") && MainScreen.getPlayerMain().getRock()>=2) {
+								MainScreen.getPlayerMain().setRock(MainScreen.getPlayerMain().getRock()-2);
+								B2dWorld.gameCheatCounter--;
+								MainScreen.updateCheatCounter();
+							}
+							if(x.getPortType().equals("WOOL") && MainScreen.getPlayerMain().getWool()>=2) {
+								MainScreen.getPlayerMain().setWool(MainScreen.getPlayerMain().getWool()-2);
+								B2dWorld.gameCheatCounter--;
+								MainScreen.updateCheatCounter();
+							}
+						}
+					}
+					
 					
 				}
 			} else {

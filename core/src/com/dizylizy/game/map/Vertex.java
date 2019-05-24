@@ -25,14 +25,14 @@ public class Vertex extends MapElement{
 
 	private int XCoord, YCoord, ID;
 	private float XCenter,YCenter,R;
-	private boolean hover = false, isFilled = false, hasBuilding=false;
+	private boolean hover = false, isFilled = false, hasBuilding=false, isPort=false;
 	private String Name="Vertex",Adjacency = "", BuildingName = "";
 	private float tileSize;
 	private Body vertexBody;
 	private BodyFactory bodyFactory;
 	private Color color = Color.WHITE;
 	
-	
+	 
 	
 	private PolygonSprite settlement;
 	private PolygonSprite city1,city2;
@@ -95,6 +95,15 @@ public class Vertex extends MapElement{
 		
 		setBody(bodyFactory.makeCircleMapElement(XCenter+tileSize, YCenter+tileSize, R));
 		
+		if((XCoord==3 && YCoord==2)||(XCoord==4 && YCoord==2)||(XCoord==6 && YCoord==1)||
+			(XCoord==1 && YCoord==4)||(XCoord==2 && YCoord==3)||(XCoord==1 && YCoord==5)||
+			(XCoord==2 && YCoord==5)||(XCoord==4 && YCoord==6)||(XCoord==5 && YCoord==6)||
+			(XCoord==8 && YCoord==6)||(XCoord==9 && YCoord==6)||(XCoord==11 && YCoord==5)||
+			(XCoord==12 && YCoord==5)||(XCoord==12 && YCoord==4)||(XCoord==11 && YCoord==3)||
+			(XCoord==10 && YCoord==2)||(XCoord==9 && YCoord==2)||(XCoord==7 && YCoord==1)) {
+				isPort=true;
+		}
+		
 	}
 
 	public void renderpb(float delta, PolygonSpriteBatch pb, OrthographicCamera cam) {
@@ -123,9 +132,9 @@ public class Vertex extends MapElement{
 			sr.setColor(Color.GREEN);
 			sr.circle(XCenter+tileSize, YCenter+tileSize, R);
 		}
-		if(isFilled){
-			sr.setColor(Color.RED);
-			sr.circle(XCenter+tileSize, YCenter+tileSize, R);
+		if(isPort){
+			sr.setColor(Color.GRAY);
+			sr.circle(XCenter+tileSize, YCenter+tileSize, R/2);
 		}
 	}
 	
@@ -547,6 +556,10 @@ public class Vertex extends MapElement{
 	public void setColor(Color color2) {
 		color = color2;
 		
+	}
+	
+	public boolean getIsPort() {
+		return isPort;
 	}
 
 

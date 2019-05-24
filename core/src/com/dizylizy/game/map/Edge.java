@@ -105,11 +105,7 @@ public class Edge extends MapElement{
 			sr.setColor(Color.GREEN);
 			sr.circle(XCenter+tileSize, YCenter+tileSize, R*2);
 			
-		}if(isFilled){
-			sr.setColor(Color.RED);
-			sr.circle(XCenter+tileSize, YCenter+tileSize, R);
 		}
-		
 	}
 	
 	

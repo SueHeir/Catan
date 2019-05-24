@@ -26,13 +26,13 @@ import com.dizylizy.game.world.B2dWorld;
 		private int Value, XCoord, YCoord, ID;
 		private float XCenter,YCenter,R, tileSize; 
 		private boolean hover = false, selected = false, hasBuilding=false;
-		private String Name = "TILE", Type = "", Adjacency = "", BuildingName = "";
+		private String Name = "TILE", Type = "", Adjacency = "", BuildingName = "", PortType = "";
 		private Body hexegonBody;
 		
 		
 		
 		private PolygonSprite poly; // To assign at the beginning
-		private Texture texture, robberTexture;
+		private Texture texture, robberTexture, shipTexture;
 		private GameAssetsManager assetManager;
 		private BodyFactory bodyFactory;
 
@@ -64,7 +64,7 @@ import com.dizylizy.game.world.B2dWorld;
 			String tex = "images/"+Type+".PNG";
 			texture = assetManager.manager.get(tex, Texture.class);
 			robberTexture = assetManager.manager.get(GameAssetsManager.ROBBERImage, Texture.class);
-			
+			shipTexture = assetManager.manager.get(GameAssetsManager.SHIPImage, Texture.class);
 			TextureRegion textureRegion = new TextureRegion(texture);
 			
 			float size = 1.005f; 
@@ -94,6 +94,41 @@ import com.dizylizy.game.world.B2dWorld;
 				BuildingName="";
 			}
 			
+			if((XCoord==1 && YCoord==1)||(XCoord==3 && YCoord==0)||(XCoord==5 && YCoord==1)||
+			(XCoord==0 && YCoord==3)||(XCoord==0 && YCoord==5)||(XCoord==2 && YCoord==6)||
+			(XCoord==4 && YCoord==6)||(XCoord==6 && YCoord==5)||(XCoord==6 && YCoord==3)) {
+				BuildingName="PORT";
+				
+				if(XCoord==1 && YCoord==1) {
+					PortType = "BRICK";
+				}
+				if(XCoord==3 && YCoord==0) {
+					PortType = "THREE";
+				}
+				if(XCoord==5 && YCoord==1) {
+					PortType = "THREE";
+				}
+				if(XCoord==0 && YCoord==3) {
+					PortType = "WOOD";
+				}
+				if(XCoord==0 && YCoord==5) {
+					PortType = "THREE";
+				}
+				if(XCoord==2 && YCoord==6) {
+					PortType = "WHEAT";
+				}
+				if(XCoord==4 && YCoord==6) {
+					PortType = "ROCK";
+				}
+				if(XCoord==6 && YCoord==5) {
+					PortType = "THREE";
+				}
+				if(XCoord==6 && YCoord==3) {
+					PortType = "WOOL";
+				}
+				
+			}
+			
 			
 		}
 		
@@ -118,11 +153,17 @@ import com.dizylizy.game.world.B2dWorld;
 			if(BuildingName.equals("ROBBER")) {
 				sb.draw(robberTexture, XCenter+tileSize-5, YCenter+tileSize-5, 0,0,10,10);
 			}
+			if(BuildingName.equals("PORT")) {
+				sb.draw(shipTexture, XCenter+tileSize-15, YCenter+tileSize-15, 0,0,30,30);
+				font.draw(sb,PortType,XCenter+tileSize-10, YCenter+tileSize-15);
+			}
+			
+			
 			if(Value!=0)
-			font.draw(sb,""+Value, XCenter+tileSize,YCenter+tileSize);
+				font.draw(sb,""+Value, XCenter+tileSize,YCenter+tileSize);
 			if(hover) {
-			sr.setColor(Color.GREEN);
-			sr.circle(XCenter+tileSize*1.01f, YCenter+tileSize*1.01f, tileSize*0.75f);
+				sr.setColor(Color.GREEN);
+				sr.circle(XCenter+tileSize*1.01f, YCenter+tileSize*1.01f, tileSize*0.75f);
 			}
 			
 		}
@@ -543,6 +584,14 @@ import com.dizylizy.game.world.B2dWorld;
 
 		public void setBody(Body hexegonBody) {
 			this.hexegonBody = hexegonBody;
+		}
+
+		public String getPortType() {
+			return PortType;
+		}
+
+		public void setPortType(String portType) {
+			PortType = portType;
 		}
 		
 
