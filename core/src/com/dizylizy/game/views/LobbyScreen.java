@@ -419,8 +419,12 @@ public class LobbyScreen implements Screen{
 		startGame.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				getSocket().emit("startGame", new JSONObject());
-				startGame();
+				if(allPlayerList.size()==4 && colorsAreGood()) {
+					getSocket().emit("startGame", new JSONObject());
+					startGame();
+				}
+				
+			
 			}
 
 			
@@ -477,6 +481,21 @@ public class LobbyScreen implements Screen{
 				
 	}
 	
+	private static boolean colorsAreGood() {
+		for(Player x: allPlayerList) {
+			for(Player y: allPlayerList) {
+				if(x!=y) {
+					if(x.getColor()==y.getColor()) {
+						return false;
+					}
+				}
+			}
+		}
+		
+		
+		return true;
+	}
+	
 	private static void reCalcFirstPlayer() {
 		Player firstPlayer = null;
 		int maxValue = 0;
@@ -495,6 +514,8 @@ public class LobbyScreen implements Screen{
 	
 	
 	private static void orderThePlayers(Player player) {
+		
+		
 		
 		if(allPlayerList.size()==4) {
 			if(player.getColor()==Color.BROWN) {
@@ -521,6 +542,9 @@ public class LobbyScreen implements Screen{
 				orderedPlayers.add(2,getPlayerByColor(Color.BLUE));
 				orderedPlayers.add(3,getPlayerByColor(Color.RED));
 			}
+		}
+		if(allPlayerList.size()!=4) {
+			
 		}
 	}
 	
