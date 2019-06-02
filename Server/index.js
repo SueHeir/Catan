@@ -9,6 +9,8 @@ var mapUpdated = false;
 var vertexList = [];
 var edgeList = [];
 
+var hasGameStarted = false;
+
 
 server.listen(8080,'10.0.0.54', function(){
 		console.log("Server is now running...");
@@ -18,7 +20,8 @@ io.on('connection', function(socket){
 	console.log("Player Connected!");
 	socket.emit('socketID', { id: socket.id} );
 	socket.emit('getPlayers',players);
-	socket.emit('mapSync',mapElements)
+	socket.emit('mapSync',mapElements);
+	
 	socket.broadcast.emit('newPlayer', { id: socket.id});
 	socket.on('playerInfoUpdate', function(data){
 		data.id = socket.id;
@@ -59,11 +62,7 @@ io.on('connection', function(socket){
 	});
 	socket.on('startGame', function(data){
 		socket.broadcast.emit('startGame');
-		console.log("The Game Has Started");
-		
-	});
-	socket.on('gameStart', function(data){
-		socket.broadcast.emit('gameStart');
+		hasGameStarted = true;
 		console.log("The Game Has Started");
 		
 	});

@@ -69,7 +69,7 @@ public class MenuScreen implements Screen{
         //Need to remove and add this to lobby window
         colorOfPlayer = "Brown";
         final SelectBox<String> colorBox = new SelectBox<String>(skin);
-        colorBox.setItems("Brown","Red","White","Blue","Green","Orange");
+        colorBox.setItems("Brown","Red","White","Blue");
         
         
         //add Buttons and Text Fields to table

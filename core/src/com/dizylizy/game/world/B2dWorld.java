@@ -443,7 +443,11 @@ public class B2dWorld {
 	}
 	
 	public static void setCameraZoom(float amount) {
-		camera.zoom += amount * 0.2f;
+		
+		if((camera.zoom + amount * 0.2f)>0.3 && (camera.zoom + amount * 0.2f)<2.5) {
+			camera.zoom += amount * 0.2f;
+		}
+		
 	}
 	
 	public static int rollDice(int i) {

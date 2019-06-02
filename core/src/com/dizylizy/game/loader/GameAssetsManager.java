@@ -22,7 +22,7 @@ public class GameAssetsManager {
 	public final String skin = "skin/uiskin.json";
 	
 	// Textures
-	public final String OCEANImage = "images/OCEAN.PNG";
+	public final static String OCEANImage = "images/OCEAN.PNG";
 	public final String PLAINSImage = "images/PLAINS.PNG";
 	public final String MOUNTAINImage = "images/MOUNTAIN.PNG";
 	public final String MUDImage = "images/MUD.PNG";

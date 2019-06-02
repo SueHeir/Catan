@@ -45,6 +45,7 @@ public class LobbyScreen implements Screen{
 	protected boolean shouldStartGame = false;
 	private static  Socket socket;
 	private static Player playerMain;
+	private static Player playerToRemove;
 	private static ArrayList<Player> allPlayerList;
 	private static ArrayList<Player> orderedPlayers;
 	private static Table playerTable;
@@ -117,6 +118,12 @@ public class LobbyScreen implements Screen{
 		if(shouldStartGame) {
 			startGame();
 			shouldStartGame=false;
+		}
+		
+		if(playerToRemove!=null) {
+			allPlayerList.remove(playerToRemove);
+			playerToRemove=null;
+			updateDisplayTable(new Skin(Gdx.files.internal("skin/uiskin.json")));
 		}
 		
 		
@@ -227,18 +234,20 @@ public class LobbyScreen implements Screen{
 			@Override
 			public void call(Object... args) {
 				JSONObject data = (JSONObject) args[0];
+				
+				
 				try {
 					
 					//Removes disconnected Player from Server
 					String id = data.getString("id");
 					for(Player x: allPlayerList) {
-						if(x.getID()==id) {
-							allPlayerList.remove(x);
+						if(x.getID().equals(id)) {
+							playerToRemove=x;
 						}
 					}
 					
 				} catch (JSONException e) {
-					Gdx.app.log("SocketIO", "Error getting new Player ID");			
+					Gdx.app.log("SocketIO", "Error player Disconnect");			
 				}
 			}
 			

@@ -12,6 +12,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -24,6 +25,7 @@ import com.dizylizy.game.MainGame;
 import com.dizylizy.game.controller.KeyboardController;
 import com.dizylizy.game.gui.DevelopmentCards;
 import com.dizylizy.game.gui.Gui;
+import com.dizylizy.game.loader.GameAssetsManager;
 import com.dizylizy.game.map.Map;
 import com.dizylizy.game.map.Tile;
 import com.dizylizy.game.map.Vertex;
@@ -48,6 +50,7 @@ public class MainScreen implements Screen {
 	private BitmapFont font;
 	private Stage stage;
 	private Skin skin;
+	protected Player playerToRemove;
 	static private Socket socket;
 	private static Player playerMain;
 	public static ArrayList<Player> orderedPlayers;
@@ -91,6 +94,68 @@ public class MainScreen implements Screen {
 		
 		configSocketEvents();
 	}
+	
+	
+	@Override
+	public void show() {
+		InputMultiplexer multiplexer = new InputMultiplexer();
+		multiplexer.addProcessor(stage); // set stage as first input processor
+		multiplexer.addProcessor(controller);  // set your game input precessor as second
+		Gdx.input.setInputProcessor(multiplexer);	
+		
+		Gui.show(stage,skin,parent.assMan,playerMain,orderedPlayers);
+		
+		
+	}
+
+	@Override
+	public void render(float delta) {
+		
+		
+		
+	
+		sb.setProjectionMatrix(cam.combined);
+		pb.setProjectionMatrix(cam.combined);
+		sr.setProjectionMatrix(cam.combined);
+		cam.update();
+		
+		Gdx.gl.glClearColor(0f, 0f, 0f, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
+		model.logicStep(delta);
+		
+		sb.begin();
+		sb.draw(parent.assMan.manager.get(GameAssetsManager.OCEANImage, Texture.class), -Gdx.graphics.getWidth()/2, -Gdx.graphics.getWidth()/2,  Gdx.graphics.getWidth()*2,Gdx.graphics.getWidth()*2);
+		sb.end();
+		
+		pb.begin();
+		B2dWorld.renderpb(delta, pb,cam);
+		pb.end(); 
+		
+		sb.begin();
+		sr.begin(ShapeType.Line);
+		
+		font.getData().setScale(0.5f,0.5f);
+		B2dWorld.rendersb(delta,sb,font,sr);
+		Gui.rendersb(delta,sb);
+		
+		sb.end();
+		sr.end();
+		//debugRenderer.render(model.world, new Matrix4(cam.combined));
+		
+		// tell our stage to do actions and draw itself
+		
+		
+		stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+		stage.draw();
+		
+		if(playerToRemove!=null) {
+			//eventually remove player here
+			playerToRemove = null;
+		}
+	}
+	
+	
 	
 	public static void mapUpdateVertex() {
 		JSONArray data = new JSONArray();
@@ -361,54 +426,34 @@ public class MainScreen implements Screen {
 				}
 				
 			}
+			
+			//Event on player Disconnected 
+			}).on("playerDisconnected", new Emitter.Listener() {
+				@Override
+				public void call(Object... args) {
+					JSONObject data = (JSONObject) args[0];
+					
+					
+					try {
+						
+						//Removes disconnected Player from Server
+						String id = data.getString("id");
+						for(Player x: orderedPlayers) {
+							if(x.getID().equals(id)) {
+								playerToRemove=x;
+								System.out.println("Player Disconnected");
+							}
+						}
+						
+					} catch (JSONException e) {
+						Gdx.app.log("SocketIO", "Error player Disconnect");			
+					}
+				}
 		});
 		
 	}
 
-	@Override
-	public void show() {
-		InputMultiplexer multiplexer = new InputMultiplexer();
-		multiplexer.addProcessor(stage); // set stage as first input processor
-		multiplexer.addProcessor(controller);  // set your game input precessor as second
-		Gdx.input.setInputProcessor(multiplexer);	
-		
-		Gui.show(stage,skin,parent.assMan,playerMain,orderedPlayers);
-		
-		
-	}
-
-	@Override
-	public void render(float delta) {
-		
-		
-		model.logicStep(delta);
 	
-		sb.setProjectionMatrix(cam.combined);
-		pb.setProjectionMatrix(cam.combined);
-		sr.setProjectionMatrix(cam.combined);
-		cam.update();
-		Gdx.gl.glClearColor(0f, 0f, 0f, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		
-		pb.begin();
-		B2dWorld.renderpb(delta, pb,cam);
-		pb.end(); 
-		
-		sb.begin();
-		sr.begin(ShapeType.Line);
-		font.getData().setScale(0.5f,0.5f);
-		B2dWorld.rendersb(delta,sb,font,sr);
-		Gui.rendersb(delta,sb);
-		sb.end();
-		sr.end();
-		//debugRenderer.render(model.world, new Matrix4(cam.combined));
-		
-		// tell our stage to do actions and draw itself
-		
-		
-		stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
-		stage.draw();
-	}
 	
 
 	@Override

@@ -151,7 +151,7 @@ import com.dizylizy.game.world.B2dWorld;
 		}
 		public void rendersb(float delta, SpriteBatch sb, BitmapFont font, ShapeRenderer sr) {
 			if(BuildingName.equals("ROBBER")) {
-				sb.draw(robberTexture, XCenter+tileSize-5, YCenter+tileSize-5, 0,0,10,10);
+				sb.draw(robberTexture, XCenter+tileSize-10, YCenter+tileSize-10, 0,0,20,20);
 			}
 			if(BuildingName.equals("PORT")) {
 				sb.draw(shipTexture, XCenter+tileSize-15, YCenter+tileSize-15, 0,0,30,30);
