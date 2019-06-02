@@ -149,8 +149,8 @@ public class MainScreen implements Screen {
 		stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
 		stage.draw();
 		
-		if(playerToRemove!=null) {
-			//eventually remove player here
+		if(playerToRemove!=null) { 
+			//eventually remove player here  
 			playerToRemove = null;
 		}
 	}
